@@ -71,6 +71,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (id)initWithDelegate:(id)delegate
 {
     //Custom init. The picker contains custom information to create the FlowLayout
+    self.delegate = delegate;
     
     screenWidth = CGRectGetWidth(self.delegate.bounds);
     screenHeight = CGRectGetHeight(self.delegate.bounds);
@@ -129,6 +130,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)dismissAnimated
 {
+    [self.delegate dismissAnimated];
 }
 
 
@@ -182,13 +184,21 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)setupButtons
 {
-    self.navigationItem.rightBarButtonItem =
-    [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"picker.navigation.done-button",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"Done")
-                                     style:UIBarButtonItemStyleDone
-                                    target:self.picker
-                                    action:@selector(finishPickingAssets:)];
-    
-    self.navigationItem.rightBarButtonItem.enabled = (self.picker.autoDisableDoneButton ? self.picker.selectedAssets.count > 0 : TRUE);
+    UIButton *button = [self.delegate createAddButtonWithTarget:self
+                                                       selector:@selector(didFinishPickingAssets)];
+    [self.view addSubview:button];
+    NSInteger numRows = [self.delegate gridViewRows];
+    UICollectionViewFlowLayout *layout = self.collectionViewLayout;
+    NSInteger gridViewHeight = (layout.itemSize.height * numRows +
+                                layout.minimumLineSpacing * (numRows - 1));
+    // center the addItemsToSpace button between the end of the grid view and the end of the screenheight.
+    NSInteger middleVertical = (gridViewHeight + screenHeight) / 2;
+    button.frame = CGRectMake(screenWidth / 2.f - button.frame.size.width / 2.f,
+                              middleVertical - button.frame.size.height / 2,
+                              button.frame.size.width,
+                              button.frame.size.height);
+    button.enabled = NO;
+    self.addIdeasButton = button;
 }
 
 - (void)updateButtonState
@@ -374,7 +384,11 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         [self.picker.delegate assetsPickerController:self.picker didUnhighlightAsset:asset];
 }
 
-
+- (void)didFinishPickingAssets
+{
+    [self.delegate didFinishPickingAssets];
+    [self.delegate dismissAnimated];
+}
 
 #pragma mark - UICollectionViewDataSource
 

@@ -193,12 +193,12 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
     
     //Retrieve the pre-fetched assets for this album:
     PHFetchResult *assetsFetchResult = (self.collectionsFetchResultsAssets[indexPath.section])[indexPath.row];
+    cell.detailTextLabel.text = [self tableCellSubtitle:assetsFetchResult];
     
-    //Display the number of assets
-    if(self.picker.displayAlbumsNumberOfAssets)
-    {
-        cell.detailTextLabel.text = [self tableCellSubtitle:assetsFetchResult];
-    }
+    cell.textLabel.font = self.delegate.headerFont;
+    cell.textLabel.textColor = self.delegate.textColor;
+    cell.detailTextLabel.font = self.delegate.detailFont;
+    cell.detailTextLabel.textColor = self.delegate.detailTextColor;
     
     //Set the 3 images (if exists):
     if([assetsFetchResult count]>0)
