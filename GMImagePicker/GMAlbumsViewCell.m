@@ -34,6 +34,7 @@
         
         //Border width of 1 pixel:
         float borderWidth = 1.0/[UIScreen mainScreen].scale;
+        self.backgroundColor = [UIColor clearColor];
         
         //ImageView
         _imageView3 = [UIImageView new];
@@ -97,11 +98,9 @@
 
         
         //TextLabel
-        self.textLabel.font = [UIFont fontWithName:@"Helvetica" size:17.0];
         self.textLabel.numberOfLines = 1;
         self.textLabel.translatesAutoresizingMaskIntoConstraints = NO;
         
-        self.detailTextLabel.font = [UIFont fontWithName:@"Helvetica" size:14.0];
         self.detailTextLabel.numberOfLines = 1;
         self.detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
         

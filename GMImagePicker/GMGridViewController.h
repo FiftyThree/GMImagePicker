@@ -15,7 +15,11 @@
 @interface GMGridViewController : UICollectionViewController
 
 @property (strong) PHFetchResult *assetsFetchResults;
+/**
+ *  The assets picker’s delegate object.
+ */
+@property (nonatomic, weak) id <GMImagePickerControllerDelegate> delegate;
 
--(id)initWithPicker:(GMImagePickerController *)picker;
+- (id)initWithDelegate:(id)delegate;
     
 @end

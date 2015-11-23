@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GMImagePickerController.h"
 
 // Measuring IOS8 Photos APP at @2x (iPhone5s):
 //   The rows are 180px/90pts
@@ -26,5 +27,9 @@ static CGSize const kAlbumThumbnailSize3 = {62.0f , 62.0f};
 
 
 @interface GMAlbumsViewController : UITableViewController
+/**
+ *  The assets picker’s delegate object.
+ */
+@property (nonatomic, weak) id<GMImagePickerControllerDelegate> delegate;
 
 @end
