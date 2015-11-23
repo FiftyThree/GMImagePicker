@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Guillermo Muntaner Perelló. All rights reserved.
 //
 
-@import UIKit;
-@import Photos;
+#import "UIKit/UIKit.h"
+#import "Photos/Photos.h"
 
 
 //This is the default image picker size!
@@ -31,7 +31,7 @@ static CGSize const kPopoverContentSize = {480, 720};
 
 /**
  *  It contains the selected `PHAsset` objects. The order of the objects is the selection order.
- *
+ * 
  *  You can add assets before presenting the picker to show the user some preselected assets.
  */
 @property (nonatomic, strong) NSMutableArray *selectedAssets;
@@ -117,6 +117,31 @@ static CGSize const kPopoverContentSize = {480, 720};
  *  @name Closing the Picker
  */
 
+- (void)selectAsset:(PHAsset *)asset;
+- (void)deselectAsset:(PHAsset *)asset;
+- (void)didFinishPickingAssets;
+- (CGFloat)minimumInteritemSpacing;
+- (NSInteger)gridViewColumns;
+- (NSInteger)gridViewRows;
+- (NSArray *)selectedAssets;
+- (CGRect)bounds;
+- (UIButton *)createAddButtonWithTarget:(id)target
+                               selector:(SEL)selector;
+- (UIBarButtonItem *)createCloseButtonWithTarget:(id)target
+                                        selector:(SEL)selector;
+- (UIFont *)headerFont;
+- (UIFont *)titleFont;
+- (UIFont *)detailFont;
+- (UIColor *)backgroundColor;
+- (UIColor *)textColor;
+- (UIColor *)detailTextColor;
+- (void)dismissAnimated;
+- (NSString *)allPhotosTitle;
+- (NSArray *)customSmartCollections;
+
+
+@optional
+
 /**
  *  Tells the delegate that the user finish picking photos or videos.
  *  @param picker The controller object managing the assets picker interface.
@@ -124,9 +149,6 @@ static CGSize const kPopoverContentSize = {480, 720};
  */
 
 - (void)assetsPickerController:(GMImagePickerController *)picker didFinishPickingAssets:(NSArray *)assets;
-
-
-@optional
 
 /**
  *  Tells the delegate that the user cancelled the pick operation.

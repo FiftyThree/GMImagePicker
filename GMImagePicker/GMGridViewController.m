@@ -53,6 +53,7 @@
 @property (nonatomic, weak) GMImagePickerController *picker;
 @property (strong) PHCachingImageManager *imageManager;
 @property CGRect previousPreheatRect;
+@property (nonatomic) UIButton *addIdeasButton;
 
 @end
 
@@ -67,31 +68,12 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     UICollectionViewFlowLayout *landscapeLayout;
 }
 
--(id)initWithPicker:(GMImagePickerController *)picker
+- (id)initWithDelegate:(id)delegate
 {
     //Custom init. The picker contains custom information to create the FlowLayout
-    self.picker = picker;
     
-    //Ipad popover is not affected by rotation!
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    {
-        screenWidth = CGRectGetWidth(picker.view.bounds);
-        screenHeight = CGRectGetHeight(picker.view.bounds);
-    }
-    else
-    {
-        if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
-        {
-            screenHeight = CGRectGetWidth(picker.view.bounds);
-            screenWidth = CGRectGetHeight(picker.view.bounds);
-        }
-        else
-        {
-            screenWidth = CGRectGetWidth(picker.view.bounds);
-            screenHeight = CGRectGetHeight(picker.view.bounds);
-        }
-    }
-    
+    screenWidth = CGRectGetWidth(self.delegate.bounds);
+    screenHeight = CGRectGetHeight(self.delegate.bounds);
     
     UICollectionViewFlowLayout *layout = [self collectionViewFlowLayoutForOrientation:[UIApplication sharedApplication].statusBarOrientation];
     if (self = [super initWithCollectionViewLayout:layout])
@@ -102,11 +84,14 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         AssetGridThumbnailSize = CGSizeMake(layout.itemSize.width * scale, layout.itemSize.height * scale);
         
         self.collectionView.allowsMultipleSelection = YES;
+        self.collectionView.pagingEnabled = YES;
         
         [self.collectionView registerClass:GMGridViewCell.class
                 forCellWithReuseIdentifier:GMGridViewCellIdentifier];
         
         self.preferredContentSize = kPopoverContentSize;
+        self.navigationItem.rightBarButtonItem = [self.delegate createCloseButtonWithTarget:self
+                                                                                   selector:@selector(dismissAnimated)];
     }
     
     return self;
@@ -118,12 +103,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     [super viewDidLoad];
     [self setupViews];
     
-    //Navigation bar customization_
-    if(self.picker.customNavigationBarPrompt)
-    {
-        self.navigationItem.prompt = self.picker.customNavigationBarPrompt;
-    }
-    
     self.imageManager = [[PHCachingImageManager alloc] init];
     [self resetCachedAssets];
     [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
@@ -134,7 +113,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     [super viewWillAppear:animated];
     
     [self setupButtons];
-    [self setupToolbar];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -149,6 +127,9 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
 }
 
+- (void)dismissAnimated
+{
+}
 
 
 #pragma mark - Rotation
@@ -210,9 +191,9 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     self.navigationItem.rightBarButtonItem.enabled = (self.picker.autoDisableDoneButton ? self.picker.selectedAssets.count > 0 : TRUE);
 }
 
-- (void)setupToolbar
+- (void)updateButtonState
 {
-    self.toolbarItems = self.picker.toolbarItems;
+    self.addIdeasButton.enabled = (self.delegate.selectedAssets.count > 0);
 }
 
 #pragma mark - Collection View Layout
@@ -220,54 +201,21 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (UICollectionViewFlowLayout *)collectionViewFlowLayoutForOrientation:(UIInterfaceOrientation)orientation
 {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    {
-        if(!portraitLayout)
-        {
-            portraitLayout = [[UICollectionViewFlowLayout alloc] init];
-            portraitLayout.minimumInteritemSpacing = self.picker.minimumInteritemSpacing;
-            int cellTotalUsableWidth = screenWidth - (self.picker.colsInPortrait-1)*self.picker.minimumInteritemSpacing;
-            portraitLayout.itemSize = CGSizeMake(cellTotalUsableWidth/self.picker.colsInPortrait, cellTotalUsableWidth/self.picker.colsInPortrait);
-            double cellTotalUsedWidth = (double)portraitLayout.itemSize.width*self.picker.colsInPortrait;
-            double spaceTotalWidth = (double)screenWidth-cellTotalUsedWidth;
-            double spaceWidth = spaceTotalWidth/(double)(self.picker.colsInPortrait-1);
-            portraitLayout.minimumLineSpacing = spaceWidth;
-        }
-        return portraitLayout;
-    }
-    else
-    {
-        if(UIInterfaceOrientationIsLandscape(orientation))
-        {
-            if(!landscapeLayout)
-            {
-                landscapeLayout = [[UICollectionViewFlowLayout alloc] init];
-                landscapeLayout.minimumInteritemSpacing = self.picker.minimumInteritemSpacing;
-                int cellTotalUsableWidth = screenHeight - (self.picker.colsInLandscape-1)*self.picker.minimumInteritemSpacing;
-                landscapeLayout.itemSize = CGSizeMake(cellTotalUsableWidth/self.picker.colsInLandscape, cellTotalUsableWidth/self.picker.colsInLandscape);
-                double cellTotalUsedWidth = (double)landscapeLayout.itemSize.width*self.picker.colsInLandscape;
-                double spaceTotalWidth = (double)screenHeight-cellTotalUsedWidth;
-                double spaceWidth = spaceTotalWidth/(double)(self.picker.colsInLandscape-1);
-                landscapeLayout.minimumLineSpacing = spaceWidth;
-            }
-            return landscapeLayout;
-        }
-        else
-        {
-            if(!portraitLayout)
-            {
-                portraitLayout = [[UICollectionViewFlowLayout alloc] init];
-                portraitLayout.minimumInteritemSpacing = self.picker.minimumInteritemSpacing;
-                int cellTotalUsableWidth = screenWidth - (self.picker.colsInPortrait-1)*self.picker.minimumInteritemSpacing;
-                portraitLayout.itemSize = CGSizeMake(cellTotalUsableWidth/self.picker.colsInPortrait, cellTotalUsableWidth/self.picker.colsInPortrait);
-                double cellTotalUsedWidth = (double)portraitLayout.itemSize.width*self.picker.colsInPortrait;
-                double spaceTotalWidth = (double)screenWidth-cellTotalUsedWidth;
-                double spaceWidth = spaceTotalWidth/(double)(self.picker.colsInPortrait-1);
-                portraitLayout.minimumLineSpacing = spaceWidth;
-            }
-            return portraitLayout;
-        }
-    }
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.minimumInteritemSpacing = self.delegate.minimumInteritemSpacing;
+    int cellTotalUsableWidth = screenWidth - (self.delegate.gridViewColumns - 1) * self.delegate.minimumInteritemSpacing;
+    layout.itemSize = CGSizeMake(cellTotalUsableWidth / self.delegate.gridViewColumns,
+                                 cellTotalUsableWidth / self.delegate.gridViewColumns);
+    double cellTotalUsedWidth = (double)layout.itemSize.width * self.delegate.gridViewColumns;
+    double spaceTotalWidth = (double)screenWidth - cellTotalUsedWidth;
+    double spaceWidth = spaceTotalWidth / (double)(self.delegate.gridViewColumns - 1);
+    layout.minimumLineSpacing = self.delegate.minimumInteritemSpacing;
+    
+    double heightOfItems = layout.itemSize.height * self.delegate.gridViewRows + (self.delegate.gridViewRows - 1) * self.delegate.minimumInteritemSpacing;
+    
+    layout.sectionInset = UIEdgeInsetsMake(0, 0, screenHeight - heightOfItems, 0);
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    return layout;
 }
 
 
@@ -371,6 +319,8 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     PHAsset *asset = self.assetsFetchResults[indexPath.item];
     
     [self.picker selectAsset:asset];
+    [self.delegate selectAsset:asset];
+    [self updateButtonState];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didSelectAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didSelectAsset:asset];
@@ -379,6 +329,8 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldDeselectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    [self.delegate deselectAsset:asset];
+    [self updateButtonState];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldDeselectAsset:)])
         return [self.picker.delegate assetsPickerController:self.picker shouldDeselectAsset:asset];
