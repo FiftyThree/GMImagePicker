@@ -122,7 +122,6 @@ static CGSize const kPopoverContentSize = {480, 720};
 - (void)didFinishPickingAssets;
 - (CGFloat)minimumInteritemSpacing;
 - (NSInteger)gridViewColumns;
-- (NSInteger)gridViewRows;
 - (NSArray *)selectedAssets;
 - (CGRect)bounds;
 - (UIButton *)createAddButtonWithTarget:(id)target

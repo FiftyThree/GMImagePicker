@@ -85,7 +85,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         AssetGridThumbnailSize = CGSizeMake(layout.itemSize.width * scale, layout.itemSize.height * scale);
         
         self.collectionView.allowsMultipleSelection = YES;
-        self.collectionView.pagingEnabled = YES;
         
         [self.collectionView registerClass:GMGridViewCell.class
                 forCellWithReuseIdentifier:GMGridViewCellIdentifier];
@@ -184,21 +183,31 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)setupButtons
 {
-    UIButton *button = [self.delegate createAddButtonWithTarget:self
+    if (self.addIdeasButton) {
+        return;
+    }
+
+    self.addIdeasButton = [self.delegate createAddButtonWithTarget:self
                                                        selector:@selector(didFinishPickingAssets)];
-    [self.view addSubview:button];
-    NSInteger numRows = [self.delegate gridViewRows];
-    UICollectionViewFlowLayout *layout = self.collectionViewLayout;
-    NSInteger gridViewHeight = (layout.itemSize.height * numRows +
-                                layout.minimumLineSpacing * (numRows - 1));
-    // center the addItemsToSpace button between the end of the grid view and the end of the screenheight.
-    NSInteger middleVertical = (gridViewHeight + screenHeight) / 2;
-    button.frame = CGRectMake(screenWidth / 2.f - button.frame.size.width / 2.f,
-                              middleVertical - button.frame.size.height / 2,
-                              button.frame.size.width,
-                              button.frame.size.height);
-    button.enabled = NO;
-    self.addIdeasButton = button;
+    [self.addIdeasButton setTranslatesAutoresizingMaskIntoConstraints:false];
+
+    [self.view addSubview:self.addIdeasButton];
+
+    [[NSLayoutConstraint constraintWithItem:self.addIdeasButton
+                                 attribute:NSLayoutAttributeCenterX
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:self.view
+                                 attribute:NSLayoutAttributeCenterX
+                                multiplier:1
+                                  constant:0] setActive:true];
+
+    [[NSLayoutConstraint constraintWithItem:self.addIdeasButton
+                                  attribute:NSLayoutAttributeBottom
+                                  relatedBy:NSLayoutRelationEqual
+                                     toItem:self.view
+                                  attribute:NSLayoutAttributeBottom
+                                 multiplier:1
+                                   constant:-35] setActive:true];
 }
 
 - (void)updateButtonState
@@ -216,15 +225,9 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     int cellTotalUsableWidth = screenWidth - (self.delegate.gridViewColumns - 1) * self.delegate.minimumInteritemSpacing;
     layout.itemSize = CGSizeMake(cellTotalUsableWidth / self.delegate.gridViewColumns,
                                  cellTotalUsableWidth / self.delegate.gridViewColumns);
-    double cellTotalUsedWidth = (double)layout.itemSize.width * self.delegate.gridViewColumns;
-    double spaceTotalWidth = (double)screenWidth - cellTotalUsedWidth;
-    double spaceWidth = spaceTotalWidth / (double)(self.delegate.gridViewColumns - 1);
     layout.minimumLineSpacing = self.delegate.minimumInteritemSpacing;
     
-    double heightOfItems = layout.itemSize.height * self.delegate.gridViewRows + (self.delegate.gridViewRows - 1) * self.delegate.minimumInteritemSpacing;
-    
-    layout.sectionInset = UIEdgeInsetsMake(0, 0, screenHeight - heightOfItems, 0);
-    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, 0);
     return layout;
 }
 
