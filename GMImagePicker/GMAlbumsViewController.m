@@ -268,9 +268,11 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
     else
     {
         [cell setVideoLayout:NO];
-        cell.imageView3.image = [UIImage imageNamed:@"EmptyFolder"];
-        cell.imageView2.image = [UIImage imageNamed:@"EmptyFolder"];
-        cell.imageView1.image = [UIImage imageNamed:@"EmptyFolder"];
+        NSBundle *frameWorkBundle = [NSBundle bundleForClass:[GMAlbumsViewController class]];
+        UIImage *emptyFolder = [UIImage imageNamed:@"GMEmptyFolder" inBundle:frameWorkBundle compatibleWithTraitCollection:nil];
+        cell.imageView3.image = emptyFolder;
+        cell.imageView2.image = emptyFolder;
+        cell.imageView1.image = emptyFolder;
     }
     
     return cell;

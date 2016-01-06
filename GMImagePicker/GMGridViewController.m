@@ -390,7 +390,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (void)didFinishPickingAssets
 {
     [self.delegate didFinishPickingAssets];
-    [self.delegate dismissAnimated];
 }
 
 #pragma mark - UICollectionViewDataSource
